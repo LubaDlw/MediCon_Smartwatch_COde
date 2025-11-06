@@ -2582,16 +2582,27 @@ void ui_clockScreen_screen_init(void)
       lv_label_set_text(ui_dayLabel, "Sunday");
       lv_obj_set_style_text_font(ui_dayLabel, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-      ui_amPmLabel = lv_label_create(ui_clockScreen);
-      lv_obj_set_width(ui_amPmLabel, LV_SIZE_CONTENT);  /// 1
-      lv_obj_set_height(ui_amPmLabel, LV_SIZE_CONTENT); /// 1
-      lv_obj_set_x(ui_amPmLabel, 12);
-      lv_obj_set_y(ui_amPmLabel, 105);
-      lv_obj_set_align(ui_amPmLabel, LV_ALIGN_CENTER);
-      lv_label_set_text(ui_amPmLabel, "PM");
-      lv_obj_set_style_text_font(ui_amPmLabel, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    ui_amPmLabel = lv_label_create(ui_clockScreen);
+    lv_obj_set_width(ui_amPmLabel, LV_SIZE_CONTENT);  /// 1
+    lv_obj_set_height(ui_amPmLabel, LV_SIZE_CONTENT); /// 1
+    lv_obj_set_x(ui_amPmLabel, 12);
+    lv_obj_set_y(ui_amPmLabel, 105);
+    lv_obj_set_align(ui_amPmLabel, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_amPmLabel, "PM");
+    lv_obj_set_style_text_font(ui_amPmLabel, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-      ui_alertPanel = lv_obj_create(ui_clockScreen);
+    // MediCon Branding
+    lv_obj_t *ui_mediconLabel = lv_label_create(ui_clockScreen);
+    lv_obj_set_width(ui_mediconLabel, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_mediconLabel, LV_SIZE_CONTENT);
+    lv_obj_set_x(ui_mediconLabel, 0);
+    lv_obj_set_y(ui_mediconLabel, -95);
+    lv_obj_set_align(ui_mediconLabel, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_mediconLabel, "MediCon");
+    lv_obj_set_style_text_font(ui_mediconLabel, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(ui_mediconLabel, lv_color_hex(0x00A8FF), LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_alertPanel = lv_obj_create(ui_clockScreen);
       lv_obj_set_width(ui_alertPanel, 200);
       lv_obj_set_height(ui_alertPanel, 55);
       lv_obj_set_align(ui_alertPanel, LV_ALIGN_CENTER);

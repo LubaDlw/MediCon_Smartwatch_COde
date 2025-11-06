@@ -9,7 +9,7 @@
 
 #define ENABLE_FACE_174 // (174)
 // #define ENABLE_FACE_228 // (228)
-#define ENABLE_FACE_1041 // (1041)
+// #define ENABLE_FACE_1041 // (1041) - REMOVED
 // #define ENABLE_FACE_1167 // (1167)
 // #define ENABLE_FACE_1169 // (1169)
 // #define ENABLE_FACE_2051 // (2051)
@@ -58,6 +58,7 @@
 
 #define ENABLE_APP_CALENDAR
 #define ENABLE_APP_SAMPLE
+#define ENABLE_APP_STEPS
 // #define ENABLE_GAME_TASK
 // #define ENABLE_GAME_RACING
 

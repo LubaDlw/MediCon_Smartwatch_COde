@@ -172,6 +172,17 @@ void init_face_2151(void (*callback)(const char*, const lv_img_dsc_t *, lv_obj_t
     lv_obj_set_style_pad_bottom(face_2151, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
 
     lv_obj_add_event_cb(face_2151, onFaceEvent, LV_EVENT_ALL, NULL);
+    // MediCon Branding
+    lv_obj_t *medicon_label_2151 = lv_label_create(face_2151);
+    lv_obj_set_width(medicon_label_2151, LV_SIZE_CONTENT);
+    lv_obj_set_height(medicon_label_2151, LV_SIZE_CONTENT);
+    lv_obj_set_x(medicon_label_2151, 0);
+    lv_obj_set_y(medicon_label_2151, 10);
+    lv_obj_set_align(medicon_label_2151, LV_ALIGN_TOP_MID);
+    lv_label_set_text(medicon_label_2151, "MediCon");
+    lv_obj_set_style_text_font(medicon_label_2151, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(medicon_label_2151, lv_color_hex(0x00A8FF), LV_PART_MAIN | LV_STATE_DEFAULT);
+
 
     
     face_2151_0_1184 = lv_image_create(face_2151);

@@ -38,6 +38,17 @@ void init_face_radar_466(void (*callback)(const char*, const lv_img_dsc_t *, lv_
     lv_obj_set_style_pad_bottom(face_radar_466, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
 
     lv_obj_add_event_cb(face_radar_466, onFaceEvent, LV_EVENT_ALL, NULL);
+    // MediCon Branding
+    lv_obj_t *medicon_label_radar_466 = lv_label_create(face_radar_466);
+    lv_obj_set_width(medicon_label_radar_466, LV_SIZE_CONTENT);
+    lv_obj_set_height(medicon_label_radar_466, LV_SIZE_CONTENT);
+    lv_obj_set_x(medicon_label_radar_466, 0);
+    lv_obj_set_y(medicon_label_radar_466, 10);
+    lv_obj_set_align(medicon_label_radar_466, LV_ALIGN_TOP_MID);
+    lv_label_set_text(medicon_label_radar_466, "MediCon");
+    lv_obj_set_style_text_font(medicon_label_radar_466, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(medicon_label_radar_466, lv_color_hex(0x00A8FF), LV_PART_MAIN | LV_STATE_DEFAULT);
+
 
     
     face_radar_466_0_984 = lv_img_create(face_radar_466);

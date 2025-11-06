@@ -30,6 +30,11 @@ void imu_init();
 imu_data_t get_imu_data();
 void imu_close();
 
+// Steps counter functions
+int get_step_count();
+float get_distance_km();
+int get_calories();
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

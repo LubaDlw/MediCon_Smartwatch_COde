@@ -2298,9 +2298,10 @@ void update_faces()
   int battery = watch.getPhoneBattery();
   bool connection = watch.isConnected();
 
-  int steps = 2735;
-  int distance = 17;
-  int kcal = 348;
+  // Get real step data from step counter
+  int steps = get_step_count();
+  int distance = (int)get_distance_km();
+  int kcal = get_calories();
   int bpm = 76;
   int oxygen = 97;
 
