@@ -4180,6 +4180,7 @@ void ui_watchfaces_init(void)
       init_face_smart_resized(registerWatchface_cb);
       init_face_tix_resized(registerWatchface_cb);
       init_face_wfb_resized(registerWatchface_cb);
+      init_face_medicon(registerWatchface_cb);
 
       init_face_174(registerWatchface_cb);
       init_face_228(registerWatchface_cb);
@@ -4211,6 +4212,7 @@ void ui_update_watchfaces(int second, int minute, int hour, bool mode, bool am, 
       update_check_smart_resized(ui_home, second, minute, hour, mode, am, day, month, year, weekday, temp, icon, battery, connection, steps, distance, kcal, bpm, oxygen);
       update_check_tix_resized(ui_home, second, minute, hour, mode, am, day, month, year, weekday, temp, icon, battery, connection, steps, distance, kcal, bpm, oxygen);
       update_check_wfb_resized(ui_home, second, minute, hour, mode, am, day, month, year, weekday, temp, icon, battery, connection, steps, distance, kcal, bpm, oxygen);
+      update_check_medicon(ui_home, second, minute, hour, mode, am, day, month, year, weekday, temp, icon, battery, connection, steps, distance, kcal, bpm, oxygen);
 
       update_check_174(ui_home, second, minute, hour, mode, am, day, month, year, weekday, temp, icon, battery, connection, steps, distance, kcal, bpm, oxygen);
       update_check_228(ui_home, second, minute, hour, mode, am, day, month, year, weekday, temp, icon, battery, connection, steps, distance, kcal, bpm, oxygen);

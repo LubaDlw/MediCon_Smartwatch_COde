@@ -45,6 +45,7 @@
 
 #include "ui/custom_face.h"
 #include "common/api.h"
+#include "apps/steps/steps.h"
 
 #include "main.h"
 #include "displays/pins.h"
@@ -1971,6 +1972,9 @@ void hal_setup()
   }
 
   imu_init();
+  
+  // Initialize background step counting
+  steps_init_background();
 
 #ifdef ENABLE_RTC
   Rtc.Begin();
@@ -2035,6 +2039,14 @@ void hal_loop()
     delay(5);
 
     watch.loop();
+    
+    // Update background step counting (every loop iteration ~50ms)
+    static uint32_t last_step_check = 0;
+    if (millis() - last_step_check >= 50)
+    {
+      last_step_check = millis();
+      steps_update_background();
+    }
 
 #if defined(M5_STACK_DIAL) || defined(VIEWE_KNOB_15)
     long newPosition = read_encoder_position();
@@ -2304,7 +2316,7 @@ void update_faces()
   int kcal = get_calories();
   int bpm = 76;
   int oxygen = 97;
-
+  
   if (ui_home == face_custom_root)
   {
     update_time_custom(second, minute, hour, mode, am, day, month, year, weekday);

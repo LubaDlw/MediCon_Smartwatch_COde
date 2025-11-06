@@ -44,8 +44,12 @@
 #endif
 
 #if defined(ESPS3_1_69) || defined(ESPS3_1_28) || defined(VIEWE_SMARTRING) ||  defined(ESPS3_1_75)
+#ifndef ENABLE_APP_QMI8658C
 #define ENABLE_APP_QMI8658C
+#endif
+#ifndef ENABLE_APP_ATTITUDE
 #define ENABLE_APP_ATTITUDE
+#endif
 #endif
 
 #if defined(ELECROW_C3)
@@ -58,7 +62,9 @@
 
 #define ENABLE_APP_CALENDAR
 #define ENABLE_APP_SAMPLE
+#ifndef ENABLE_APP_STEPS
 #define ENABLE_APP_STEPS
+#endif
 // #define ENABLE_GAME_TASK
 // #define ENABLE_GAME_RACING
 

@@ -4,6 +4,7 @@
  */
 
 #include "steps.h"
+#include <math.h>
 
 #ifdef ENABLE_APP_STEPS
 
@@ -32,11 +33,27 @@ static const float CALORIES_PER_STEP = 0.04; // Average calories per step
 // Accelerometer threshold and tracking
 static float prev_acc_mag = 0.0;
 static bool step_detected = false;
-static const float STEP_THRESHOLD = 1.2; // Acceleration threshold for step detection
+static const float STEP_THRESHOLD = 0.3; // Acceleration threshold for step detection - LOWERED FOR SENSITIVITY
 static uint32_t last_step_time = 0;
-static const uint32_t MIN_STEP_INTERVAL_MS = 200; // Minimum time between steps (ms)
+static const uint32_t MIN_STEP_INTERVAL_MS = 200; // Minimum time between steps (ms) - faster detection
+static const uint32_t MAX_STEP_INTERVAL_MS = 2000; // Maximum time between steps (ms)
+
+// Fall detection variables
+static bool fall_detected = false;
+static uint32_t last_fall_time = 0;
+static const float FALL_THRESHOLD = 2.5; // High acceleration threshold for fall detection (g)
+static const float FREEFALL_THRESHOLD = 0.5; // Low acceleration threshold for freefall (g)
+static const uint32_t FALL_COOLDOWN_MS = 5000; // Cooldown period after fall detection (ms)
+static bool fall_alert_shown = false;
+
+// Moving average filter for better step detection
+#define FILTER_SIZE 5
+static float acc_mag_history[FILTER_SIZE] = {0};
+static int history_index = 0;
 
 lv_timer_t *steps_timer = NULL;
+lv_obj_t *ui_fallAlertPanel = NULL;
+lv_obj_t *ui_fallAlertText = NULL;
 
 // Calculate magnitude of acceleration vector
 float calc_acc_magnitude(float x, float y, float z)
@@ -44,7 +61,82 @@ float calc_acc_magnitude(float x, float y, float z)
     return sqrtf(x * x + y * y + z * z);
 }
 
-// Detect step from accelerometer data
+// Apply moving average filter
+float apply_moving_average(float new_value)
+{
+    acc_mag_history[history_index] = new_value;
+    history_index = (history_index + 1) % FILTER_SIZE;
+    
+    float sum = 0.0f;
+    for (int i = 0; i < FILTER_SIZE; i++)
+    {
+        sum += acc_mag_history[i];
+    }
+    return sum / FILTER_SIZE;
+}
+
+// Detect fall from accelerometer data
+bool detect_fall_from_imu(float acc_mag)
+{
+    uint32_t current_time = lv_tick_get();
+    
+    // Check cooldown period
+    if (current_time - last_fall_time < FALL_COOLDOWN_MS)
+    {
+        return false;
+    }
+    
+    // Detect high impact (fall) or freefall
+    if (acc_mag > FALL_THRESHOLD || acc_mag < FREEFALL_THRESHOLD)
+    {
+        last_fall_time = current_time;
+        return true;
+    }
+    
+    return false;
+}
+
+// Show fall alert
+void show_fall_alert(void)
+{
+    if (ui_stepsScreen == NULL || fall_alert_shown)
+    {
+        return;
+    }
+    
+    fall_alert_shown = true;
+    
+    // Create fall alert panel if it doesn't exist
+    if (ui_fallAlertPanel == NULL)
+    {
+        ui_fallAlertPanel = lv_obj_create(ui_stepsScreen);
+        lv_obj_set_width(ui_fallAlertPanel, 200);
+        lv_obj_set_height(ui_fallAlertPanel, 120);
+        lv_obj_set_align(ui_fallAlertPanel, LV_ALIGN_CENTER);
+        lv_obj_set_style_radius(ui_fallAlertPanel, 15, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(ui_fallAlertPanel, lv_color_hex(0xFF4444), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_opa(ui_fallAlertPanel, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_border_color(ui_fallAlertPanel, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_border_width(ui_fallAlertPanel, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+        
+        ui_fallAlertText = lv_label_create(ui_fallAlertPanel);
+        lv_obj_set_width(ui_fallAlertText, 180);
+        lv_obj_set_height(ui_fallAlertText, LV_SIZE_CONTENT);
+        lv_obj_set_align(ui_fallAlertText, LV_ALIGN_CENTER);
+        lv_label_set_text(ui_fallAlertText, "FALL DETECTED!\n\nAre you OK?");
+        lv_obj_set_style_text_align(ui_fallAlertText, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_text_font(ui_fallAlertText, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_text_color(ui_fallAlertText, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    }
+    
+    lv_obj_remove_flag(ui_fallAlertPanel, LV_OBJ_FLAG_HIDDEN);
+    
+    // Auto-hide after 3 seconds
+    lv_obj_add_flag(ui_fallAlertPanel, LV_OBJ_FLAG_HIDDEN);
+    fall_alert_shown = false;
+}
+
+// Detect step from accelerometer data - SIMPLIFIED VERSION
 bool detect_step_from_imu(void)
 {
     imu_data_t imu = get_imu_data();
@@ -67,15 +159,13 @@ bool detect_step_from_imu(void)
         return false;
     }
     
-    // Detect peak in acceleration (step detection)
-    // A step is detected when acceleration crosses threshold going up then down
-    if (prev_acc_mag < STEP_THRESHOLD && acc_mag >= STEP_THRESHOLD && !step_detected)
+    // SIMPLE STEP DETECTION: Detect deviation from gravity (1g)
+    // When walking, acceleration varies around 1g
+    float deviation = fabs(acc_mag - 1.0f); // Deviation from 1g (gravity)
+    
+    // If deviation is significant, it's likely a step
+    if (deviation > STEP_THRESHOLD)
     {
-        step_detected = true;
-    }
-    else if (prev_acc_mag >= STEP_THRESHOLD && acc_mag < STEP_THRESHOLD && step_detected)
-    {
-        step_detected = false;
         last_step_time = current_time;
         prev_acc_mag = acc_mag;
         return true; // Step detected!
@@ -312,22 +402,72 @@ void ui_stepsScreen_screen_init(void)
     lv_obj_add_event_cb(ui_resetButton, ui_event_resetButton, LV_EVENT_ALL, NULL);
 }
 
-// Public function to get current step count (for watchfaces)
+#endif
+
+// Background step counting (called from main loop)
+void steps_init_background(void)
+{
+#ifdef ENABLE_APP_STEPS
+    // Initialize step counter variables
+    total_steps = 0;
+    total_distance = 0.0;
+    total_calories = 0;
+    prev_acc_mag = 0.0;
+    step_detected = false;
+    last_step_time = 0;
+    
+    // Clear history buffer
+    for (int i = 0; i < FILTER_SIZE; i++)
+    {
+        acc_mag_history[i] = 0.0f;
+    }
+    history_index = 0;
+#endif
+}
+
+void steps_update_background(void)
+{
+#ifdef ENABLE_APP_STEPS
+    // Check for step using IMU
+    if (detect_step_from_imu())
+    {
+        total_steps++;
+        update_step_metrics();
+        
+        // Update UI if steps screen is visible
+        if (ui_stepsScreen != NULL)
+        {
+            update_steps_display();
+        }
+    }
+#endif
+}
+
+// Public functions to get step data (for watchfaces)
+// These are always available, even when steps app is disabled
 int get_step_count(void)
 {
+#ifdef ENABLE_APP_STEPS
     return total_steps;
+#else
+    return 0;
+#endif
 }
 
-// Public function to get distance (for watchfaces)
 float get_distance_km(void)
 {
+#ifdef ENABLE_APP_STEPS
     return total_distance;
+#else
+    return 0.0f;
+#endif
 }
 
-// Public function to get calories (for watchfaces)
 int get_calories(void)
 {
+#ifdef ENABLE_APP_STEPS
     return total_calories;
-}
-
+#else
+    return 0;
 #endif
+}

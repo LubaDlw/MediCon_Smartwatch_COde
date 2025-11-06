@@ -36,6 +36,7 @@
 #include "../faces/b_w_resized/b_w_resized.h"
 #include "../faces/elecrow/elecrow.h"
 #include "../faces/kenya/kenya.h"
+#include "../faces/medicon/medicon.h"
 #include "../faces/pixel_resized/pixel_resized.h"
 #include "../faces/radar/radar.h"
 #include "../faces/radar_466/radar_466.h"
