@@ -47,8 +47,8 @@
 #ifndef ENABLE_APP_QMI8658C
 #define ENABLE_APP_QMI8658C
 #endif
-#ifndef ENABLE_APP_ATTITUDE
-#define ENABLE_APP_ATTITUDE
+//#ifndef ENABLE_APP_ATTITUDE
+//#define ENABLE_APP_ATTITUDE
 #endif
 #endif
 
@@ -61,7 +61,7 @@
 #endif
 
 #define ENABLE_APP_CALENDAR
-#define ENABLE_APP_SAMPLE
+//#define ENABLE_APP_SAMPLE
 #ifndef ENABLE_APP_STEPS
 #define ENABLE_APP_STEPS
 #endif
@@ -70,8 +70,8 @@
 
 #define ENABLE_GAME_SIMON
 
-#define ENABLE_APP_NAVIGATION
-#define ENABLE_APP_CONTACTS
+//#define ENABLE_APP_NAVIGATION
+//#define ENABLE_APP_CONTACTS
 #define ENABLE_APP_TIMER
 
 #ifdef __cplusplus
@@ -90,4 +90,4 @@ void vibratePin(bool state);
 } /* extern "C" */
 #endif
 
-#endif /*DRIVER_H*/
+//#endif /*DRIVER_H*/

@@ -45,6 +45,7 @@
 
 #include "ui/custom_face.h"
 #include "common/api.h"
+#include "common/mock_notifications.h"
 #include "apps/steps/steps.h"
 
 #include "main.h"
@@ -1223,12 +1224,14 @@ void onNotificationsOpen(lv_event_t *e)
   notificationsUpdate = false;
 
   lv_obj_clean(ui_messageList);
-  int c = watch.getNotificationCount();
+  
+  // Use mock notification data instead of Bluetooth/Chronos
+  int c = mock_notifications_get_count();
   for (int i = 0; i < c; i++)
   {
-    addNotificationList(watch.getNotificationAt(i).icon, watch.getNotificationAt(i).message.c_str(), i);
+    MockNotification mockNotif = mock_notifications_get_at(i);
+    addNotificationList(mockNotif.icon, mockNotif.message, i);
   }
-  // addNotificationList(watch.getNotificationAt(0).icon, watch.getNotificationAt(0).message.c_str(), i);
 
   lv_obj_scroll_to_y(ui_messageList, 1, LV_ANIM_ON);
   lv_obj_remove_flag(ui_messageList, LV_OBJ_FLAG_HIDDEN);
@@ -2004,8 +2007,11 @@ void hal_setup()
 
   navigateInfo("Navigation", "Chronos", "Start navigation on Google maps");
 
+  // Initialize mock health notification system
+  mock_notifications_init();
+  notificationsUpdate = true;  // Trigger initial notification display
+
   watch.clearNotifications();
-  notificationsUpdate = false;
   lv_obj_clean(ui_messageList);
   lv_obj_t *info = lv_label_create(ui_messageList);
   lv_obj_set_width(info, 180);
@@ -2013,7 +2019,7 @@ void hal_setup()
   lv_obj_set_height(info, LV_SIZE_CONTENT); /// 1
   lv_label_set_long_mode(info, LV_LABEL_LONG_WRAP);
   lv_obj_set_style_text_font(info, &lv_font_montserrat_14, LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_label_set_text(info, "No notifications available. Connect Chronos app to receive phone notifications");
+  lv_label_set_text(info, "Chronic Health Management System\nNotifications will appear every 45 seconds");
 
 #if !defined(BUZZER_PIN) || (BUZZER_PIN == -1)
   lv_obj_add_state(ui_soundsAlert, LV_STATE_DISABLED);
@@ -2039,6 +2045,59 @@ void hal_loop()
     delay(5);
 
     watch.loop();
+    
+    // Update mock notification system
+    mock_notifications_update();
+    
+    // Check for new mock notifications
+    if (mock_notifications_has_new())
+    {
+      mock_notifications_clear_new();
+      notificationsUpdate = true;
+      
+      // Trigger alert and feedback
+      feedbackRun(T_NOTIFICATION);
+      
+      // Get current mock notification for alert display
+      MockNotification mockNotif = mock_notifications_get_current();
+      
+      lv_disp_t *display = lv_display_get_default();
+      lv_obj_t *actScr = lv_display_get_screen_active(display);
+      
+      if (actScr == ui_notificationScreen)
+      {
+        // Update notification screen with latest message
+        screenTimer.time = millis() + 5000;
+        screenTimer.active = true;
+        
+        lv_label_set_text(ui_messageTime, mockNotif.time.c_str());
+        lv_label_set_text(ui_messageContent, mockNotif.message);
+        setNotificationIcon(ui_messageIcon, mockNotif.icon);
+        
+        lv_obj_scroll_to_y(ui_messagePanel, 0, LV_ANIM_ON);
+        lv_obj_add_flag(ui_messageList, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_remove_flag(ui_messagePanel, LV_OBJ_FLAG_HIDDEN);
+      }
+      else
+      {
+        if (check_alert_state(ALERT_POPUP))
+        {
+          // Show alert popup on current screen
+          lv_obj_set_parent(ui_alertPanel, actScr);
+          
+          lv_label_set_text(ui_alertText, mockNotif.message);
+          setNotificationIcon(ui_alertIcon, mockNotif.icon);
+          
+          screenTimer.time = millis() + 5000;
+          screenTimer.active = true;
+          
+          alertTimer.time = millis();
+          alertTimer.active = true;
+          
+          lv_obj_remove_flag(ui_alertPanel, LV_OBJ_FLAG_HIDDEN);
+        }
+      }
+    }
     
     // Update background step counting (every loop iteration ~50ms)
     static uint32_t last_step_check = 0;
