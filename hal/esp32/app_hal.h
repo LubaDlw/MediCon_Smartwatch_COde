@@ -68,11 +68,12 @@
 // #define ENABLE_GAME_TASK
 // #define ENABLE_GAME_RACING
 
-#define ENABLE_GAME_SIMON
+//#define ENABLE_GAME_SIMON
 
 #define ENABLE_APP_NAVIGATION
 #define ENABLE_APP_CONTACTS
 #define ENABLE_APP_TIMER
+//#define ENABLE_APP_WIFI_SERVER
 
 #ifdef __cplusplus
 extern "C" {
