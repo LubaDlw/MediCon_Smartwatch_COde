@@ -47,6 +47,10 @@
 #include "common/api.h"
 #include "apps/steps/steps.h"
 
+#ifdef ENABLE_WIFI_SERVER
+#include "wifi_server.h"
+#endif
+
 #include "main.h"
 #include "displays/pins.h"
 #include "splash.h"
@@ -1761,6 +1765,10 @@ void hal_setup()
   set_pin_io(2, true);
   set_pin_io(3, true);
   set_pin_io(4, true);
+#elif defined(ESPS3_1_69) || defined(ESPS3_1_28)
+  // Initialize I2C for QMI8658C IMU sensor
+  Wire.begin(I2C_SDA, I2C_SCL);
+  delay(100);
 #endif
 
 #ifdef M5_STACK_DIAL
@@ -1976,6 +1984,12 @@ void hal_setup()
   // Initialize background step counting
   steps_init_background();
 
+#ifdef ENABLE_WIFI_SERVER
+  // Initialize WiFi server for mobile app communication
+  Timber.i("Starting WiFi server...");
+  wifi_setup();
+#endif
+
 #ifdef ENABLE_RTC
   Rtc.Begin();
 
@@ -2047,6 +2061,11 @@ void hal_loop()
       last_step_check = millis();
       steps_update_background();
     }
+
+#ifdef ENABLE_WIFI_SERVER
+    // Handle WiFi server requests
+    wifi_loop();
+#endif
 
 #if defined(M5_STACK_DIAL) || defined(VIEWE_KNOB_15)
     long newPosition = read_encoder_position();

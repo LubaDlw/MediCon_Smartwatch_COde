@@ -74,20 +74,23 @@
 #define ENABLE_APP_CONTACTS
 #define ENABLE_APP_TIMER
 
+// WiFi Configuration
+#define WIFI_SSID "SW-1009-6517_EXT"
+#define WIFI_PASSWORD "4e9ebf21a3"
+#define ENABLE_WIFI_SERVER true
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
+void wifi_setup();
+void wifi_loop();
 void hal_setup(void);
 void hal_loop(void);
-
-
 void vibratePin(bool state);
 
-
 #ifdef __cplusplus
-} /* extern "C" */
+}
 #endif
 
-#endif /*DRIVER_H*/
+#endif

@@ -136,7 +136,7 @@ void show_fall_alert(void)
     fall_alert_shown = false;
 }
 
-// Detect step from accelerometer data - SIMPLIFIED VERSION
+// Detect step from accelerometer data - PEAK DETECTION VERSION
 bool detect_step_from_imu(void)
 {
     imu_data_t imu = get_imu_data();
@@ -149,29 +149,50 @@ bool detect_step_from_imu(void)
     // Calculate acceleration magnitude
     float acc_mag = calc_acc_magnitude(imu.ax, imu.ay, imu.az);
     
+    // Apply moving average filter for noise reduction
+    float filtered_mag = apply_moving_average(acc_mag);
+    
     // Get current time
     uint32_t current_time = lv_tick_get();
     
     // Check if enough time has passed since last step
     if (current_time - last_step_time < MIN_STEP_INTERVAL_MS)
     {
-        prev_acc_mag = acc_mag;
+        prev_acc_mag = filtered_mag;
         return false;
     }
     
-    // SIMPLE STEP DETECTION: Detect deviation from gravity (1g)
-    // When walking, acceleration varies around 1g
-    float deviation = fabs(acc_mag - 1.0f); // Deviation from 1g (gravity)
+    // PEAK DETECTION: Look for peaks in acceleration
+    // A step occurs when there's a peak (local maximum) in acceleration
+    // The acceleration should rise above the threshold, then fall back down
     
-    // If deviation is significant, it's likely a step
-    if (deviation > STEP_THRESHOLD)
+    static bool rising = false;
+    static float peak_value = 0.0f;
+    
+    // Calculate change in acceleration
+    float acc_change = filtered_mag - prev_acc_mag;
+    
+    // Detect rising edge (acceleration increasing)
+    if (acc_change > 0.05f && filtered_mag > (1.0f + STEP_THRESHOLD))
     {
+        rising = true;
+        if (filtered_mag > peak_value)
+        {
+            peak_value = filtered_mag;
+        }
+    }
+    // Detect falling edge (acceleration decreasing after a peak)
+    else if (rising && acc_change < -0.05f && peak_value > (1.0f + STEP_THRESHOLD))
+    {
+        // We found a peak! This is a step
+        rising = false;
+        peak_value = 0.0f;
         last_step_time = current_time;
-        prev_acc_mag = acc_mag;
-        return true; // Step detected!
+        prev_acc_mag = filtered_mag;
+        return true;
     }
     
-    prev_acc_mag = acc_mag;
+    prev_acc_mag = filtered_mag;
     return false;
 }
 
