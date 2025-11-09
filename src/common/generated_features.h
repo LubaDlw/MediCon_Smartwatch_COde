@@ -3,7 +3,6 @@
 // It will be overwritten
 
 // apps
-#include "../apps/wifi_server_app.h"
 #include "../apps/attitude/attitude.h"
 #include "../apps/calendar/calendar.h"
 #include "../apps/contacts/contacts.h"

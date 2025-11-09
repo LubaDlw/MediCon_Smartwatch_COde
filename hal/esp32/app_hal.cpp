@@ -47,10 +47,6 @@
 #include "common/api.h"
 #include "apps/steps/steps.h"
 
-#ifdef ENABLE_APP_WIFI_SERVER
-#include "apps/wifi_server_app.h"
-#endif
-
 #include "main.h"
 #include "displays/pins.h"
 #include "splash.h"
@@ -2032,11 +2028,6 @@ void hal_setup()
 
   Timber.i("Setup done");
   Timber.i(about);
-
-#ifdef ENABLE_APP_WIFI_SERVER
-  // Initialize WiFi server for mobile app communication
-  wifiServerSetup();
-#endif
 }
 
 void hal_loop()
@@ -2048,11 +2039,6 @@ void hal_loop()
     delay(5);
 
     watch.loop();
-    
-#ifdef ENABLE_APP_WIFI_SERVER
-    // Handle WiFi server connections and requests
-    wifiServerLoop();
-#endif
     
     // Update background step counting (every loop iteration ~50ms)
     static uint32_t last_step_check = 0;
